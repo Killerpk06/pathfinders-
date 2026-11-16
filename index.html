@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pathfinders Robotics</title>
+<meta name="description" content="Pathfinders: four ECE engineers from VIT Chennai building robots that run. Custom-PCB line follower and an ELRS-controlled 1/8-scale race car.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..900&family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Layout: fixed command sidebar on the left, one long scrolling console on the right (after AegisOne). */
+  --bg:#0B0B0C; --panel:#131314; --raise:#1B1B1D;
+  --ink:#EFECE4; --mute:#8E8B83; --line:rgba(239,236,228,.16); --line-2:rgba(239,236,228,.42);
+  --lime:#C8E63C; --coral:#EE6B5E; --violet:#9B6BFF; --cyan:#46E6F0;
+  --display:"Archivo","Inter",system-ui,sans-serif;
+  --body:"Inter",system-ui,sans-serif;
+  --serif:"Instrument Serif",Georgia,serif;
+  --side:264px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.6 var(--body);-webkit-font-smoothing:antialiased}
+img,video{max-width:100%;display:block}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--lime);outline-offset:3px}
+::selection{background:var(--lime);color:var(--bg)}
+
+/* ---------- sidebar ---------- */
+.side{position:fixed;inset:0 auto 0 0;width:var(--side);border-right:1px solid var(--line);background:var(--bg);display:flex;flex-direction:column;z-index:20}
+.brand{padding:22px 22px 18px;border-bottom:1px solid var(--line)}
+.brand-top{display:flex;gap:14px;align-items:center}
+.brand img{width:54px;height:auto;filter:drop-shadow(0 0 14px rgba(200,230,60,.18))}
+.brand b{display:block;font:800 22px/1 var(--display);font-stretch:112%;letter-spacing:.01em;text-transform:uppercase}
+.brand small{display:block;color:var(--mute);font-size:12px;margin-top:5px}
+.brand .meter{height:2px;background:var(--line);margin-top:18px;position:relative;overflow:hidden}
+.brand .meter i{position:absolute;inset:0 auto 0 0;width:22%;background:var(--lime);transition:width .2s linear}
+nav.menu{padding:14px 10px;display:flex;flex-direction:column;gap:2px;flex:1;overflow:auto}
+nav.menu a{display:flex;align-items:center;gap:14px;padding:10px 12px;text-decoration:none;color:var(--mute);font:600 11.5px/1 var(--body);letter-spacing:.12em;text-transform:uppercase;border-left:2px solid transparent}
+nav.menu a svg{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:1.6}
+nav.menu a:hover{color:var(--ink)}
+nav.menu a.on{color:var(--ink);border-left-color:var(--lime);background:rgba(200,230,60,.05)}
+nav.menu a .tag{margin-left:auto;border:1px solid var(--lime);color:var(--lime);font-size:10px;padding:2px 6px;letter-spacing:.06em}
+.side-foot{padding:16px 22px 22px;border-top:1px solid var(--line);color:var(--mute);font-size:12px;line-height:1.5}
+.side-foot a{color:var(--ink)}
+
+/* ---------- main ---------- */
+main{margin-left:var(--side)}
+.topbar{position:sticky;top:0;z-index:10;background:rgba(11,11,12,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:14px 40px}
+.topbar b{font:600 11.5px/1 var(--body);letter-spacing:.14em;text-transform:uppercase}
+.topbar span{display:block;color:var(--mute);font-size:12px;margin-top:6px}
+.wrap{padding:0 40px;max-width:1240px}
+section{padding:72px 0;border-bottom:1px solid var(--line);scroll-margin-top:60px}
+.kicker{color:var(--mute);font:600 11px/1 var(--body);letter-spacing:.16em;text-transform:uppercase;margin:0 0 18px}
+.kicker em{font-style:normal;color:var(--lime)}
+h1,h2,h3{font-family:var(--display);text-transform:uppercase;margin:0;text-wrap:balance}
+h1{font-weight:850;font-stretch:115%;font-size:clamp(46px,7.4vw,108px);line-height:.9;letter-spacing:-.02em}
+h2{font-weight:800;font-stretch:110%;font-size:clamp(34px,4.6vw,64px);line-height:.95;letter-spacing:-.018em}
+h3{font-weight:800;font-stretch:105%;font-size:20px;line-height:1.1;letter-spacing:.005em}
+.lede{font:italic 400 clamp(20px,2vw,26px)/1.3 var(--serif);color:var(--mute);max-width:46ch;margin:22px 0 0}
+p.body{max-width:66ch;color:#cfcbc1}
+.btn{display:inline-flex;align-items:center;gap:10px;border:1px solid var(--line-2);padding:13px 18px;font:650 11.5px/1 var(--body);letter-spacing:.12em;text-transform:uppercase;text-decoration:none;background:none;color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--ink)}
+.btn.solid{background:var(--lime);color:#14160a;border-color:var(--lime)}
+.btn.solid:hover{background:#d8f45a}
+
+/* ---------- hero ---------- */
+.hero{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);gap:48px;align-items:center;padding-top:56px}
+.hero .ctas{display:flex;gap:12px;flex-wrap:wrap;margin-top:32px}
+.crest{position:relative;justify-self:center;width:min(100%,380px)}
+.crest img{width:100%;filter:drop-shadow(0 0 40px rgba(200,230,60,.16))}
+.crest::after{content:"";position:absolute;inset:8% 10% 0;background:radial-gradient(closest-side,rgba(200,230,60,.10),transparent);z-index:-1}
+.steps{display:flex;gap:28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:44px;overflow-x:auto}
+.steps a{flex:none;padding:15px 0;text-decoration:none;color:var(--mute);font:600 11.5px/1 var(--body);letter-spacing:.12em;text-transform:uppercase;border-top:2px solid transparent;margin-top:-1px}
+.steps a i{font-style:normal;color:var(--lime);margin-right:8px}
+.steps a:hover{color:var(--ink);border-top-color:var(--lime)}
+
+/* live array console */
+.console{border:1px solid var(--line);background:var(--panel);margin-top:36px}
+.console-head{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:14px 20px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.console-head b{font:600 11px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.console-head .live{color:var(--lime);font:600 11px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.console-head .live::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--lime);box-shadow:0 0 10px var(--lime)}
+.console-body{display:grid;grid-template-columns:minmax(0,1fr) 260px}
+#array{width:100%;height:230px;display:block}
+.readout{border-left:1px solid var(--line);padding:18px 20px;display:grid;gap:16px;align-content:start}
+.readout div small{display:block;color:var(--mute);font-size:12px}
+.readout div strong{font:800 34px/1.1 var(--display);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.readout .err strong{color:var(--coral)}
+.readout .pos strong{color:var(--lime)}
+.console-foot{padding:12px 20px;border-top:1px solid var(--line);color:var(--mute);font-size:12.5px}
+
+/* ---------- stats ---------- */
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--line)}
+.stat{padding:26px 24px;border-right:1px solid var(--line)}
+.stat:last-child{border-right:0}
+.stat strong{display:block;font:850 44px/1 var(--display);font-stretch:112%;letter-spacing:-.02em}
+.stat strong.l{color:var(--lime)} .stat strong.c{color:var(--coral)}
+.stat span{display:block;color:var(--mute);font-size:13px;margin-top:10px;line-height:1.45}
+
+/* ---------- films ---------- */
+.films{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px;margin-top:36px}
+.film{border:1px solid var(--line);background:var(--panel)}
+.film video{width:100%;aspect-ratio:9/16;object-fit:cover;background:#000}
+.film figcaption{padding:16px 18px;display:flex;justify-content:space-between;gap:12px;align-items:baseline;border-top:1px solid var(--line)}
+.film figcaption b{font:800 15px/1.2 var(--display);text-transform:uppercase;font-stretch:108%}
+.film figcaption span{color:var(--mute);font-size:12.5px}
+.films-wrap{max-width:820px}
+
+/* ---------- project ---------- */
+.proj-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:end}
+.badge{border:1px solid currentColor;padding:6px 10px;font:600 10.5px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
+.lfr .badge{color:var(--lime)} .race .badge{color:var(--coral)}
+.split{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:36px;margin-top:40px;align-items:start}
+.spec{width:100%;border-collapse:collapse;font-size:14px}
+.spec caption{text-align:left;color:var(--mute);font:600 11px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;padding-bottom:14px}
+.spec th,.spec td{text-align:left;padding:12px 14px 12px 0;border-top:1px solid var(--line);vertical-align:top}
+.spec th{color:var(--mute);font-weight:500;width:34%}
+.spec td b{font-weight:600}
+.spec td span{display:block;color:var(--mute);font-size:13px;margin-top:2px}
+.panel{border:1px solid var(--line);background:var(--panel)}
+.panel-h{padding:13px 18px;border-bottom:1px solid var(--line);color:var(--mute);font:600 11px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;display:flex;justify-content:space-between;gap:10px}
+.diagram{padding:18px;overflow-x:auto}
+.diagram svg{width:100%;height:auto;display:block}
+.notes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;border:1px solid var(--line);margin-top:28px}
+.note{padding:22px 22px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.note:nth-child(2n){border-right:0}
+.note:nth-last-child(-n+2){border-bottom:0}
+.note h3{font-size:16px;margin-bottom:8px}
+.note p{margin:0;color:#c3bfb5;font-size:14px}
+.lfr .note h3::before,.race .note h3::before{content:"";display:inline-block;width:8px;height:8px;margin-right:10px;vertical-align:2px}
+.lfr .note h3::before{background:var(--lime)} .race .note h3::before{background:var(--coral)}
+.modes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--line);margin-top:28px}
+.mode{padding:16px 16px 18px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-height:96px}
+.mode:nth-child(4n){border-right:0}
+.mode:nth-last-child(-n+4){border-bottom:0}
+.mode i{font-style:normal;color:var(--lime);font:700 11px/1 var(--body);letter-spacing:.12em}
+.mode b{display:block;margin-top:8px;font-weight:600;font-size:14px}
+.mode span{display:block;color:var(--mute);font-size:12.5px;margin-top:3px;line-height:1.4}
+.gallery{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:150px;gap:10px;margin-top:28px}
+.gallery figure{margin:0;position:relative;overflow:hidden;border:1px solid var(--line);background:#000}
+.gallery img{width:100%;height:100%;object-fit:cover;transition:transform .5s ease}
+.gallery figure:hover img{transform:scale(1.04)}
+.gallery figcaption{position:absolute;left:0;right:0;bottom:0;padding:22px 12px 9px;font-size:12px;color:var(--ink);background:linear-gradient(transparent,rgba(0,0,0,.78))}
+.g-w2{grid-column:span 2}.g-w3{grid-column:span 3}.g-h2{grid-row:span 2}
+.quote{font:italic 400 clamp(22px,2.4vw,32px)/1.25 var(--serif);color:var(--ink);max-width:40ch;margin:36px 0 0;padding-left:20px;border-left:2px solid var(--lime)}
+.race .quote{border-left-color:var(--coral)}
+
+
+.pcb{margin-top:44px;border:1px solid var(--line);background:var(--panel)}
+.pcb-head{padding:24px 24px 6px;display:grid;grid-template-columns:220px minmax(0,1fr);gap:24px;align-items:start}
+.pcb-head h3{font-size:24px}
+.pcb-head p{margin:0}
+.pcb-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:10px;padding:18px 24px}
+.pcb-grid figure{margin:0;border:1px solid var(--line);background:#0f0f11}
+.pcb-grid img{width:100%;aspect-ratio:1568/984;object-fit:cover}
+.pcb-grid figcaption{padding:10px 12px;border-top:1px solid var(--line)}
+.pcb-grid figcaption b{display:block;font-size:13px}
+.pcb-grid figcaption span{color:var(--mute);font-size:12px}
+.pcb-facts{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;padding:10px 24px 24px;align-items:start}
+.pcb-nums{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line)}
+.pcb-nums div{padding:18px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.pcb-nums div:nth-child(2n){border-right:0}.pcb-nums div:nth-last-child(-n+2){border-bottom:0}
+.pcb-nums strong{display:block;font:850 30px/1 var(--display);font-stretch:110%;color:var(--lime)}
+.pcb-nums span{color:var(--mute);font-size:12.5px}
+@media (max-width:860px){.pcb-head,.pcb-facts{grid-template-columns:1fr}.pcb-grid{grid-template-columns:1fr}}
+/* ---------- capability ---------- */
+.caps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--line);margin-top:36px}
+.cap{padding:24px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.cap:nth-child(3n){border-right:0}
+.cap:nth-last-child(-n+3){border-bottom:0}
+.cap h3{font-size:18px}
+.cap p{margin:8px 0 12px;color:#c3bfb5;font-size:14px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips span{border:1px solid var(--line);padding:4px 8px;font-size:12px;color:var(--ink)}
+
+/* ---------- team ---------- */
+.team{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border:1px solid var(--line);margin-top:36px}
+.mate{padding:24px 22px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:12px}
+.mate:last-child{border-right:0}
+.mate .ini{width:52px;height:52px;border:1px solid var(--line-2);display:grid;place-items:center;font:850 20px/1 var(--display);font-stretch:115%}
+.mate:nth-child(1) .ini{color:var(--lime);border-color:var(--lime)}
+.mate h3{font-size:19px}
+.mate .role{color:var(--lime);font:600 11px/1.3 var(--body);letter-spacing:.12em;text-transform:uppercase}
+.mate p{margin:0;color:#c3bfb5;font-size:13.5px}
+.mate .links{display:flex;gap:8px;margin-top:auto;padding-top:6px;flex-wrap:wrap}
+.mate .links a{font:600 11px/1 var(--body);letter-spacing:.1em;text-transform:uppercase;text-decoration:none;border:1px solid var(--line);padding:8px 10px}
+.mate .links a:hover{border-color:var(--ink)}
+
+/* ---------- footer ---------- */
+footer{padding:64px 0 80px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:36px;align-items:center}
+footer img{width:140px}
+footer h2{font-size:clamp(30px,4vw,54px)}
+footer p{color:var(--mute);margin:12px 0 0}
+
+/* ---------- responsive ---------- */
+@media (max-width:1100px){
+  .hero{grid-template-columns:1fr}
+  .crest{width:240px;justify-self:start;order:-1}
+  .split{grid-template-columns:1fr}
+  .team{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .mate:nth-child(2){border-right:0}.mate:nth-child(-n+2){border-bottom:1px solid var(--line)}
+  .modes{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .mode:nth-child(n){border-right:1px solid var(--line);border-bottom:1px solid var(--line)}.mode:nth-child(2n){border-right:0}.mode:nth-last-child(-n+2){border-bottom:0}
+}
+@media (max-width:860px){
+  :root{--side:0px}
+  .side{position:sticky;top:0;width:auto;height:auto;flex-direction:row;align-items:center;border-right:0;border-bottom:1px solid var(--line)}
+  .brand{border:0;padding:10px 16px;flex:none}.brand img{width:34px}.brand b{font-size:16px}.brand small,.brand .meter{display:none}
+  nav.menu{flex-direction:row;padding:0 8px;overflow-x:auto}
+  nav.menu a{border-left:0;border-bottom:2px solid transparent;padding:16px 10px;white-space:nowrap}
+  nav.menu a.on{border-bottom-color:var(--lime);background:none}
+  nav.menu a svg,nav.menu a .tag{display:none}
+  .side-foot,.topbar{display:none}
+  .wrap{padding:0 16px}
+  section{padding:52px 0}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stat:nth-child(2){border-right:0}.stat:nth-child(-n+2){border-bottom:1px solid var(--line)}
+  .console-body{grid-template-columns:1fr}
+  .readout{border-left:0;border-top:1px solid var(--line);grid-template-columns:repeat(3,minmax(0,1fr))}
+  .readout div strong{font-size:24px}
+  .films{grid-template-columns:1fr 1fr;gap:12px}
+  .notes,.caps{grid-template-columns:1fr}
+  .note,.cap{border-right:0!important;border-bottom:1px solid var(--line)!important}
+  .note:last-child,.cap:last-child{border-bottom:0!important}
+  .gallery{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:140px}
+  .g-w2,.g-w3{grid-column:span 2}.g-h2{grid-row:span 2}
+  .proj-head{grid-template-columns:1fr}
+  footer{grid-template-columns:1fr}
+}
+@media (max-width:520px){
+  .diagram svg{min-width:480px}
+  .team,.modes{grid-template-columns:1fr}
+  .mate,.mode{border-right:0!important;border-bottom:1px solid var(--line)!important}
+  .films{grid-template-columns:1fr}
+  .readout{grid-template-columns:1fr 1fr}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.gallery img{transition:none}}
+</style>
+</head>
+<body>
+
+<aside class="side" aria-label="Site navigation">
+  <div class="brand">
+    <div class="brand-top">
+      <img src="media/logo.png" alt="Pathfinders crest">
+      <div><b>Pathfinders</b><small>Robotics team, VIT Chennai</small></div>
+    </div>
+    <div class="meter" aria-hidden="true"><i id="meter"></i></div>
+  </div>
+  <nav class="menu">
+    <a href="#overview" class="on"><svg viewBox="0 0 24 24"><path d="M4 12h16M4 6h16M4 18h10"/></svg>Overview</a>
+    <a href="#films"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M10 9l5 3-5 3z"/></svg>Build films</a>
+    <a href="#lfr"><svg viewBox="0 0 24 24"><path d="M3 18c4 0 4-12 9-12s5 12 9 12"/></svg>Line follower<span class="tag">16 IR</span></a>
+    <a href="#race"><svg viewBox="0 0 24 24"><circle cx="7" cy="17" r="3"/><circle cx="17" cy="17" r="3"/><path d="M4 13l3-6h10l3 6"/></svg>Race bot<span class="tag" style="border-color:var(--coral);color:var(--coral)">ELRS</span></a>
+    <a href="#capabilities"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/></svg>Capabilities</a>
+    <a href="#team"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-4 3-6 6-6s6 2 6 6M15 14.5c3 0 6 1.5 6 5.5"/></svg>Team</a>
+  </nav>
+  <div class="side-foot">Every build on this page is a real robot we made and ran.<br><a href="https://github.com/Killerpk06">github.com/Killerpk06</a></div>
+</aside>
+
+<main>
+  <div class="topbar"><b>Portfolio</b><span>design → PCB → firmware → test → race</span></div>
+  <div class="wrap">
+
+  <!-- ============ OVERVIEW ============ -->
+  <section id="overview">
+    <div class="hero">
+      <div>
+        <p class="kicker">Pathfinders · ECE · <em>VIT Chennai</em></p>
+        <h1>We build robots that run.</h1>
+        <p class="lede">Four engineers, two machines on the track, and every board, chassis and line of firmware made in-house.</p>
+        <div class="ctas">
+          <a class="btn solid" href="#films">Watch the builds</a>
+          <a class="btn" href="#lfr">See the specs</a>
+        </div>
+      </div>
+      <div class="crest"><img src="media/logo.png" alt="Pathfinders team crest: robot arm, rover, circuit traces and a compass path"></div>
+    </div>
+
+    <nav class="steps" aria-label="Build pipeline">
+      <a href="#race"><i>1</i>Design</a><a href="#lfr"><i>2</i>PCB</a><a href="#lfr"><i>3</i>Firmware</a><a href="#lfr"><i>4</i>Calibrate</a><a href="#race"><i>5</i>Field test</a><a href="#race"><i>6</i>Compete</a>
+    </nav>
+
+    <div class="console" aria-label="Simulated line sensor array">
+      <div class="console-head">
+        <b>Line sensor array · 16 × IR · via CD74HC4067</b>
+        <span class="live">Simulated</span>
+      </div>
+      <div class="console-body">
+        <canvas id="array" aria-label="Sixteen bars showing IR reflectance as a line sweeps under the sensor array"></canvas>
+        <div class="readout">
+          <div class="pos"><small>Line position (0 to 15000)</small><strong id="rPos">7500</strong></div>
+          <div class="err"><small>Error from centre</small><strong id="rErr">0</strong></div>
+          <div><small>Steering correction (PID)</small><strong id="rOut">0</strong></div>
+        </div>
+      </div>
+      <div class="console-foot">This is how Pathfinders sees the track: 16 readings, one weighted position, one PID correction per loop. Our OLED menu shows the same bar view on the robot.</div>
+    </div>
+
+    <div class="stats" style="margin-top:36px">
+      <div class="stat"><strong class="l">Wins</strong><span>Multiple competition wins as a team at top colleges and universities</span></div>
+      <div class="stat"><strong>2</strong><span>Robots designed, built and run, one on our own custom PCBs</span></div>
+      <div class="stat"><strong>16</strong><span>IR sensors on our custom array, read through one multiplexer</span></div>
+      <div class="stat"><strong class="c">3S</strong><span>LiPo race car on an ELRS 2.4 GHz radio link</span></div>
+    </div>
+  </section>
+
+  <!-- ============ FILMS ============ -->
+  <section id="films">
+    <p class="kicker">Build films</p>
+    <h2>From bare board to track.</h2>
+    <p class="lede">Both robots, start to finish. Sound on.</p>
+    <div class="films-wrap">
+      <div class="films">
+        <figure class="film">
+          <video controls playsinline preload="none" poster="media/lfr-poster.jpg"><source src="media/lfr.mp4" type="video/mp4"></video>
+          <figcaption><b>Pathfinders LFR</b><span>59 s · build, bring-up, track</span></figcaption>
+        </figure>
+        <figure class="film">
+          <video controls playsinline preload="none" poster="media/race-poster.jpg"><source src="media/race.mp4" type="video/mp4"></video>
+          <figcaption><b>Race bot</b><span>66 s · design, field test, competition</span></figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LFR ============ -->
+  <section id="lfr" class="lfr">
+    <div class="proj-head">
+      <div>
+        <p class="kicker">Project <em>01</em> · Autonomous</p>
+        <h2>Pathfinders line follower &amp; maze solver</h2>
+        <p class="lede">Custom PCB chassis, a custom 16-sensor IR array, and an STM32 running PID at the centre.</p>
+      </div>
+      <span class="badge">Built &amp; track-tested</span>
+    </div>
+
+    <div class="split">
+      <table class="spec">
+        <caption>Hardware spec</caption>
+        <tr><th>Chassis</th><td><b>Custom 2-layer PCB, 100 × 64 mm</b><span>The main board is the frame, with GND pour on both layers</span></td></tr>
+        <tr><th>Sensing</th><td><b>16 × QRE1113GR</b><span>Reflective IR sensors on a separate custom array PCB</span></td></tr>
+        <tr><th>Multiplexer</th><td><b>CD74HC4067</b><span>16 analog channels into one ADC pin (MUX_OUT), select lines S0 to S3</span></td></tr>
+        <tr><th>Board link</th><td><b>10-pin FFC cable</b><span>Array to chassis, with a 1×10 header as backup</span></td></tr>
+        <tr><th>Controller</th><td><b>STM32F103C8T6 (Blue Pill)</b><span>ARM Cortex-M3 at 72 MHz, socketed in headers</span></td></tr>
+        <tr><th>Motor driver</th><td><b>TB6612FNG</b><span>SparkFun ROB-14450 breakout, PWM per wheel</span></td></tr>
+        <tr><th>Motors</th><td><b>6 V N20 micro gear motors</b><span>Compact metal-gear drive</span></td></tr>
+        <tr><th>IMU</th><td><b>MPU6050</b><span>Gyro heading on the shared I²C bus</span></td></tr>
+        <tr><th>Display</th><td><b>0.96" SSD1306 OLED</b><span>On-robot menu and live sensor view</span></td></tr>
+        <tr><th>Input</th><td><b>4 buttons</b><span>Up, down, enter, exit</span></td></tr>
+        <tr><th>Power</th><td><b>2S LiPo via XT60</b><span>SPDT power switch, Mini360 buck for the 3.3 V logic rail, power LED</span></td></tr>
+        <tr><th>Expansion</th><td><b>Bluetooth serial header</b><span>6-pin: EN, STATE, TX, RX for wireless telemetry</span></td></tr>
+      </table>
+
+      <div class="panel">
+        <div class="panel-h"><span>System block diagram</span><span style="color:var(--lime)">LFR</span></div>
+        <div class="diagram">
+          <svg viewBox="0 0 560 420" role="img" aria-label="Block diagram: IR array to multiplexer to STM32, which drives TB6612FNG and N20 motors; MPU6050 and OLED on I2C; 2S LiPo powers motors and a 3.3 V buck powers logic">
+            <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#8E8B83"/></marker></defs>
+            <g font-family="Inter,system-ui,sans-serif" font-size="12" fill="#EFECE4">
+              <g stroke="#8E8B83" stroke-width="1.2" fill="none">
+                <path d="M150 70H198" marker-end="url(#ah)"/>
+                <path d="M300 70H330V160" marker-end="url(#ah)"/>
+                <path d="M410 210H448" marker-end="url(#ah)"/>
+                <path d="M490 236V288" marker-end="url(#ah)"/>
+                <path d="M250 210H268" marker-end="url(#ah)" />
+                <path d="M250 280H268" marker-end="url(#ah)"/>
+                <path d="M90 360H118" marker-end="url(#ah)"/>
+                <path d="M90 360V380H470V352" marker-end="url(#ah)"/>
+                <path d="M220 360H330V262" marker-end="url(#ah)"/>
+              </g>
+              <rect x="20" y="40" width="130" height="60" fill="rgba(200,230,60,.08)" stroke="#C8E63C" stroke-width="1.6"/>
+              <text x="85" y="66" text-anchor="middle" font-weight="700">16 × QRE1113GR</text><text x="85" y="84" text-anchor="middle" fill="#8E8B83" font-size="11">array PCB · FFC link</text>
+              <rect x="200" y="40" width="100" height="60" fill="none" stroke="#8E8B83"/>
+              <text x="250" y="66" text-anchor="middle" font-weight="700">CD74HC4067</text><text x="250" y="84" text-anchor="middle" fill="#8E8B83" font-size="11">16:1 analog mux</text>
+              <text x="338" y="118" fill="#8E8B83" font-size="11">1 ADC pin</text>
+              <rect x="270" y="162" width="140" height="98" fill="rgba(200,230,60,.12)" stroke="#C8E63C" stroke-width="2"/>
+              <text x="340" y="196" text-anchor="middle" font-weight="800" font-size="14">STM32F103</text><text x="340" y="214" text-anchor="middle" fill="#8E8B83" font-size="11">PID · menu · EEPROM</text><text x="340" y="232" text-anchor="middle" fill="#8E8B83" font-size="11">maze logic</text>
+              <rect x="450" y="186" width="90" height="48" fill="none" stroke="#8E8B83"/>
+              <text x="495" y="208" text-anchor="middle" font-weight="700">TB6612FNG</text><text x="495" y="224" text-anchor="middle" fill="#8E8B83" font-size="11">H-bridge</text>
+              <rect x="450" y="290" width="90" height="60" fill="none" stroke="#8E8B83"/>
+              <text x="495" y="316" text-anchor="middle" font-weight="700">2 × N20</text><text x="495" y="332" text-anchor="middle" fill="#8E8B83" font-size="11">6 V gear motors</text>
+              <text x="420" y="200" fill="#8E8B83" font-size="10.5">PWM</text>
+              <rect x="120" y="186" width="130" height="48" fill="none" stroke="#8E8B83"/>
+              <text x="185" y="208" text-anchor="middle" font-weight="700">MPU6050</text><text x="185" y="224" text-anchor="middle" fill="#8E8B83" font-size="11">gyro · I²C</text>
+              <rect x="120" y="256" width="130" height="48" fill="none" stroke="#8E8B83"/>
+              <text x="185" y="278" text-anchor="middle" font-weight="700">SSD1306 + 4 keys</text><text x="185" y="294" text-anchor="middle" fill="#8E8B83" font-size="11">OLED menu · I²C</text>
+              <rect x="20" y="336" width="70" height="48" fill="rgba(238,107,94,.10)" stroke="#EE6B5E" stroke-width="1.6"/>
+              <text x="55" y="358" text-anchor="middle" font-weight="700">2S LiPo</text><text x="55" y="374" text-anchor="middle" fill="#8E8B83" font-size="11">XT60 · 7.4 V</text>
+              <rect x="120" y="336" width="100" height="48" fill="none" stroke="#8E8B83"/>
+              <text x="170" y="358" text-anchor="middle" font-weight="700">Mini360 buck</text><text x="170" y="374" text-anchor="middle" fill="#8E8B83" font-size="11">3.3 V logic</text>
+              <text x="380" y="396" fill="#8E8B83" font-size="10.5">motor rail (VM)</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="pcb">
+      <div class="pcb-head">
+        <h3>The boards</h3>
+        <p class="body">Two custom 2-layer PCBs, designed in KiCad by the team and carrying the Pathfinders crest in silkscreen. Every net class has its own trace width so motor current never shares a skinny trace with the sensors.</p>
+      </div>
+      <div class="pcb-grid">
+        <figure class="pcb-main"><img src="media/pcb-chassis_top.jpg" alt="KiCad 3D render of the chassis board, top side"><figcaption><b>Chassis board · top</b><span>STM32 socket, TB6612FNG, OLED, 4 menu keys, XT60, FFC</span></figcaption></figure>
+        <figure><img src="media/pcb-new_ir_array_rev4_top.jpg" alt="KiCad 3D render of the curved IR array board, top side"><figcaption><b>IR array rev 4 · top</b><span>Curved arms put the sensors across the line</span></figcaption></figure>
+        <figure><img src="media/pcb-new_ir_array_rev4_bottom.jpg" alt="KiCad 3D render of the IR array board, bottom side with sensors"><figcaption><b>IR array rev 4 · bottom</b><span>16 × QRE1113GR facing the track</span></figcaption></figure>
+      </div>
+      <div class="pcb-facts">
+        <table class="spec">
+          <caption>Chassis trace widths by net class</caption>
+          <tr><th>Battery in, XT60 +</th><td><b>1.0 mm</b><span>High-current power</span></td></tr>
+          <tr><th>Motor A and B outputs</th><td><b>0.6 mm</b><span>MOTA_1/2, MOTB_1/2</span></td></tr>
+          <tr><th>+3V3, GND</th><td><b>0.4 mm</b><span>Logic power</span></td></tr>
+          <tr><th>Signals</th><td><b>0.25 mm</b><span>Default class</span></td></tr>
+        </table>
+        <div class="pcb-nums">
+          <div><strong>2</strong><span>custom 2-layer boards</span></div>
+          <div><strong>100×64</strong><span>mm chassis board</span></div>
+          <div><strong>69</strong><span>footprints on the IR array</span></div>
+          <div><strong>4 rev</strong><span>of the sensor array</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="modes" aria-label="Firmware menu modes">
+      <div class="mode"><i>Mode</i><b>PID line follow</b><span>Weighted 16-sensor position into a PID steering loop</span></div>
+      <div class="mode"><i>Mode</i><b>Maze explore</b><span>Detects junctions and dead ends, picks each turn itself</span></div>
+      <div class="mode"><i>Mode</i><b>Maze replay</b><span>Runs the maze again from what it learned</span></div>
+      <div class="mode"><i>Mode</i><b>Calibrate</b><span>Sweeps the array to record min and max per sensor</span></div>
+      <div class="mode"><i>Tool</i><b>Sensor visualiser</b><span>Bar-graph view, plus raw ADC and digital states</span></div>
+      <div class="mode"><i>Tool</i><b>PID &amp; speed config</b><span>Tune gains and base speed on the robot, no reflash</span></div>
+      <div class="mode"><i>Tool</i><b>Mode &amp; priority</b><span>Turn priority and line polarity settings</span></div>
+      <div class="mode"><i>Tool</i><b>Motor test</b><span>Checks each motor and direction before a run</span></div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><h3>Sixteen sensors, one ADC pin</h3><p>The array goes through a CD74HC4067 multiplexer. Firmware steps the four select lines and reads all 16 channels every control cycle, which leaves Blue Pill pins free for the driver, I²C and buttons.</p></div>
+      <div class="note"><h3>Tuned at the track</h3><p>Gains, speed, calibration and modes live in an OLED menu and are saved to EEPROM, so we tune on the track surface with four buttons instead of reflashing between runs.</p></div>
+      <div class="note"><h3>PCB as chassis</h3><p>The 100 × 64 mm main board doubles as the frame, and the curved sensor board bolts on out front over a 10-pin FFC. Fewer parts, less weight and no loose sensor wiring.</p></div>
+      <div class="note"><h3>Clean power</h3><p>A 2S LiPo feeds the motor driver while a 3.3 V buck feeds the logic, keeping motor noise away from the sensor readings.</p></div>
+    </div>
+
+    <div class="gallery">
+      <figure class="g-w3 g-h2"><img src="media/lfr-board.jpg" alt="Top view of the Pathfinders board with STM32, OLED, driver and motors"><figcaption>Main board: STM32, TB6612FNG, OLED, N20s</figcaption></figure>
+      <figure class="g-w3"><img src="media/lfr-oled.jpg" alt="OLED showing the 16-sensor bar graph"><figcaption>Live 16-bar sensor view on the OLED</figcaption></figure>
+      <figure class="g-w2" style="grid-column:span 3"><img src="media/lfr-track.jpg" alt="Robot placed on a black line"><figcaption>Placed on the line for a run</figcaption></figure>
+      <figure class="g-w2"><img src="media/lfr-oled2.jpg" alt="OLED menu close-up"><figcaption>Menu and calibration</figcaption></figure>
+      <figure class="g-w2"><img src="media/lfr-motor.jpg" alt="Motor and wheel test"><figcaption>Motor test</figcaption></figure>
+      <figure class="g-w2"><img src="media/lfr-dark.jpg" alt="Robot in the dark with its LEDs lit"><figcaption>Lights on</figcaption></figure>
+    </div>
+  </section>
+
+  <!-- ============ RACE BOT ============ -->
+  <section id="race" class="race">
+    <div class="proj-head">
+      <div>
+        <p class="kicker">Project <em style="color:var(--coral)">02</em> · Radio controlled</p>
+        <h2>1/8-scale race bot</h2>
+        <p class="lede">Our own chassis and our own control electronics. An ESP32 decodes the radio link and drives four motors on 3S power.</p>
+      </div>
+      <span class="badge">Built &amp; raced</span>
+    </div>
+
+    <div class="split">
+      <div class="panel">
+        <div class="panel-h"><span>Control signal chain</span><span style="color:var(--coral)">RC</span></div>
+        <div class="diagram">
+          <svg viewBox="0 0 560 360" role="img" aria-label="Signal chain: RadioMaster Pocket over ELRS 2.4 GHz to a SpeedyBee receiver, CRSF serial to the ESP32, PWM to motor drivers and four geared DC motors, all powered by a 3S LiPo">
+            <defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#8E8B83"/></marker></defs>
+            <g font-family="Inter,system-ui,sans-serif" font-size="12" fill="#EFECE4">
+              <g stroke="#8E8B83" stroke-width="1.2" fill="none">
+                <path d="M150 70H238" stroke-dasharray="4 4" marker-end="url(#ah2)"/>
+                <path d="M340 70H380V138" marker-end="url(#ah2)"/>
+                <path d="M380 210V238" marker-end="url(#ah2)"/>
+                <path d="M380 290V308" marker-end="url(#ah2)" />
+                <path d="M110 300H238" marker-end="url(#ah2)"/>
+                <path d="M110 300V174H308" marker-end="url(#ah2)"/>
+              </g>
+              <rect x="20" y="40" width="130" height="60" fill="none" stroke="#8E8B83"/>
+              <text x="85" y="66" text-anchor="middle" font-weight="700">RadioMaster</text><text x="85" y="84" text-anchor="middle" fill="#8E8B83" font-size="11">Pocket transmitter</text>
+              <text x="194" y="60" text-anchor="middle" fill="#8E8B83" font-size="11">ELRS</text><text x="194" y="92" text-anchor="middle" fill="#8E8B83" font-size="11">2.4 GHz</text>
+              <rect x="240" y="40" width="100" height="60" fill="none" stroke="#8E8B83"/>
+              <text x="290" y="66" text-anchor="middle" font-weight="700">SpeedyBee</text><text x="290" y="84" text-anchor="middle" fill="#8E8B83" font-size="11">ELRS receiver</text>
+              <text x="388" y="112" fill="#8E8B83" font-size="11">CRSF serial</text>
+              <rect x="310" y="140" width="140" height="70" fill="rgba(238,107,94,.12)" stroke="#EE6B5E" stroke-width="2"/>
+              <text x="380" y="170" text-anchor="middle" font-weight="800" font-size="14">ESP32</text><text x="380" y="188" text-anchor="middle" fill="#8E8B83" font-size="11">decode · mix · drive</text>
+              <text x="388" y="228" fill="#8E8B83" font-size="11">PWM + dir</text>
+              <rect x="310" y="240" width="140" height="50" fill="none" stroke="#8E8B83"/>
+              <text x="380" y="270" text-anchor="middle" font-weight="700">Motor drivers</text>
+              <rect x="300" y="310" width="160" height="40" fill="none" stroke="#8E8B83"/>
+              <text x="380" y="335" text-anchor="middle" font-weight="700">4 × geared DC motors</text>
+              <rect x="40" y="276" width="70" height="48" fill="rgba(238,107,94,.10)" stroke="#EE6B5E" stroke-width="1.6"/>
+              <text x="75" y="298" text-anchor="middle" font-weight="700">3S LiPo</text><text x="75" y="314" text-anchor="middle" fill="#8E8B83" font-size="11">11.1 V</text>
+              <text x="130" y="292" fill="#8E8B83" font-size="10.5">high-current rail</text>
+              <text x="130" y="166" fill="#8E8B83" font-size="10.5">regulated logic</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <table class="spec">
+        <caption>Hardware spec</caption>
+        <tr><th>Transmitter</th><td><b>RadioMaster Pocket</b><span>ExpressLRS, 2.4 GHz</span></td></tr>
+        <tr><th>Receiver</th><td><b>SpeedyBee ELRS</b><span>Outputs a CRSF digital serial stream</span></td></tr>
+        <tr><th>Controller</th><td><b>ESP32</b><span>Parses CRSF frames, maps sticks to throttle and steering</span></td></tr>
+        <tr><th>Drive</th><td><b>4 × geared DC motors</b><span>Four-wheel drive on 1/8-scale wheels</span></td></tr>
+        <tr><th>Power</th><td><b>3S LiPo</b><span>High-current motor rail</span></td></tr>
+        <tr><th>Chassis</th><td><b>Metal base plate, our design</b><span>Sketched in CAD at 185 × 175 mm with corner cut-outs for the motor mounts</span></td></tr>
+        <tr><th>Mounts</th><td><b>Bolted motor brackets</b><span>One per corner, on the plate's edges</span></td></tr>
+        <tr><th>Tested on</th><td><b>Dirt, grass and obstacle tracks</b><span>Ramps, tight circles and timed race runs</span></td></tr>
+      </table>
+    </div>
+
+    <div class="notes">
+      <div class="note"><h3>Real protocol, not hobby PWM</h3><p>The receiver talks CRSF, the same digital link FPV drones use. Our ESP32 firmware parses the frames, pulls the stick channels and turns them into throttle and steering in real time.</p></div>
+      <div class="note"><h3>Bench first, then dirt</h3><p>Every firmware change was proven on the bench with the wheels off the ground, radio in hand, before the car went back out to the field.</p></div>
+      <div class="note"><h3>Built to take hits</h3><p>A 3S pack pushes big currents into four motors on ramps, launches and crashes. The metal base plate and corner-bolted motor mounts take the abuse of off-road and obstacle runs.</p></div>
+      <div class="note"><h3>Four-wheel drive</h3><p>A motor at every corner on 1/8-scale wheels gives the grip for loose dirt, grass and ramp climbs, and the torque to turn tight on the circle sections.</p></div>
+    </div>
+
+    <div class="gallery">
+      <figure class="g-w2 g-h2"><img src="media/race-cad.jpg" alt="CAD sketch of the base plate, 185 by 175 millimetres"><figcaption>CAD: 185 × 175 mm base</figcaption></figure>
+      <figure class="g-w2 g-h2"><img src="media/race-plate.jpg" alt="Metal base plate with four motor brackets"><figcaption>Plate with motor brackets</figcaption></figure>
+      <figure class="g-w2 g-h2"><img src="media/race-motors.jpg" alt="Geared motors laid out on the plate"><figcaption>Motor layout</figcaption></figure>
+      <figure class="g-w2"><img src="media/race-elec.jpg" alt="Wired electronics and motors from above"><figcaption>Electronics wired up</figcaption></figure>
+      <figure class="g-w2"><img src="media/race-radio.jpg" alt="RadioMaster Pocket transmitter in hand"><figcaption>RadioMaster Pocket</figcaption></figure>
+      <figure class="g-w2"><img src="media/race-bench.jpg" alt="Bench test with wheels spinning"><figcaption>Bench test</figcaption></figure>
+      <figure class="g-w3 g-h2"><img src="media/race-dust.jpg" alt="Car kicking up dust on a dirt field"><figcaption>Field test on dirt</figcaption></figure>
+      <figure class="g-w3"><img src="media/race-ramp.jpg" alt="Car climbing a ramp at a competition"><figcaption>Competition: ramp section</figcaption></figure>
+      <figure class="g-w3"><img src="media/race-circle.jpg" alt="Car on the circle section of a competition track"><figcaption>Competition: precision circles</figcaption></figure>
+    </div>
+    <p class="quote">Bench test first, dirt second, competition third. Every run taught the next build something.</p>
+  </section>
+
+  <!-- ============ CAPABILITIES ============ -->
+  <section id="capabilities">
+    <p class="kicker">In-house capabilities</p>
+    <h2>We make every layer ourselves.</h2>
+    <p class="lede">Nothing waits on a vendor: boards, mechanics, firmware and software all happen on our bench.</p>
+    <div class="caps">
+      <div class="cap"><h3>PCB design</h3><p>Schematic to fabrication-ready Gerbers, then hand assembly and rework.</p><div class="chips"><span>KiCad</span><span>Altium</span><span>Sensor arrays</span><span>Power rails</span></div></div>
+      <div class="cap"><h3>3D modelling</h3><p>Chassis, mounts and enclosures modelled to fit the electronics.</p><div class="chips"><span>Fusion 360</span><span>SolidWorks</span></div></div>
+      <div class="cap"><h3>3D printing &amp; laser cutting</h3><p>Brackets, sensor mounts, cases and cut plates, iterated between runs.</p><div class="chips"><span>FDM printing</span><span>Laser cutting</span><span>Sheet parts</span></div></div>
+      <div class="cap"><h3>Embedded firmware</h3><p>Real-time control loops, sensor drivers, menus and settings storage.</p><div class="chips"><span>STM32</span><span>ESP32</span><span>Arduino</span><span>C / C++</span></div></div>
+      <div class="cap"><h3>Control &amp; radio</h3><p>PID tuning, RC protocols and long-range links.</p><div class="chips"><span>PID</span><span>ELRS / CRSF</span><span>LoRa 433 MHz</span></div></div>
+      <div class="cap"><h3>Software, AI &amp; digital</h3><p>Dashboards, AI copilots and hardware description work.</p><div class="chips"><span>TypeScript</span><span>MATLAB</span><span>Verilog</span><span>LTspice</span></div></div>
+    </div>
+  </section>
+
+  <!-- ============ TEAM ============ -->
+  <section id="team">
+    <p class="kicker">The team</p>
+    <h2>Four engineers. One pit crew.</h2>
+    <p class="lede">ECE students at VIT Chennai. We built both robots together; each of us owns a layer.</p>
+    <div class="team">
+      <article class="mate">
+        <div class="ini">VP</div>
+        <h3>V Pranav Kumar</h3>
+        <span class="role">Hardware &amp; RF lead</span>
+        <p>Electronics architecture, PCB, power and radio. Also built a LoRa 433 MHz control link on ESP32 and SX1278.</p>
+        <div class="links"><a href="https://github.com/Killerpk06">GitHub</a><a href="https://www.linkedin.com/in/v-pranav-kumar-6327a6317/">LinkedIn</a></div>
+      </article>
+      <article class="mate">
+        <div class="ini">MK</div>
+        <h3>Muthiah Karthik S</h3>
+        <span class="role">Firmware &amp; control lead</span>
+        <p>Control loops and sensor drivers. Built a fall-detection device and a USB HID macropad with encoders and a slider.</p>
+        <div class="links"><a href="https://github.com/Karthik12357">GitHub</a><a href="https://www.linkedin.com/in/muthiah-karthik-saravanan/">LinkedIn</a></div>
+      </article>
+      <article class="mate">
+        <div class="ini">AA</div>
+        <h3>Ashwanth A</h3>
+        <span class="role">Software, IoT &amp; AI lead</span>
+        <p>Dashboards and the demo layer. Built an ESP32-S3 smart home assistant, a live serial dashboard and a clinical AI copilot.</p>
+        <div class="links"><a href="https://github.com/ashfive1">GitHub</a><a href="https://www.linkedin.com/in/ashwanth-a-49a659282/">LinkedIn</a></div>
+      </article>
+      <article class="mate">
+        <div class="ini">BT</div>
+        <h3>Balaji T</h3>
+        <span class="role">Circuits &amp; verification lead</span>
+        <p>Analog front-ends and logic. Verilog state machines, an LTspice AM transmitter and an optical fibre data link.</p>
+        <div class="links"><a href="https://github.com/Balaji3476">GitHub</a><a href="https://www.linkedin.com/in/balaji-t-63b28a320">LinkedIn</a></div>
+      </article>
+    </div>
+
+    <footer>
+      <img src="media/logo.png" alt="Pathfinders crest">
+      <div>
+        <h2>Give us a problem. We'll bring a robot.</h2>
+        <p>Pathfinders · Vellore Institute of Technology, Chennai</p>
+        <div class="ctas" style="display:flex;gap:12px;flex-wrap:wrap;margin-top:22px">
+          <a class="btn solid" href="https://github.com/Killerpk06">GitHub</a>
+          <a class="btn" href="#films">Watch the builds</a>
+        </div>
+      </div>
+    </footer>
+  </section>
+  </div>
+</main>
+
+<script>
+(function(){
+  // ---- simulated 16-sensor array ----
+  const cv=document.getElementById('array'), ctx=cv.getContext('2d');
+  const rPos=document.getElementById('rPos'), rErr=document.getElementById('rErr'), rOut=document.getElementById('rOut');
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let W=0,H=0,dpr=1;
+  function size(){dpr=Math.min(2,window.devicePixelRatio||1);const r=cv.getBoundingClientRect();W=r.width;H=r.height;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);}
+  size(); addEventListener('resize',size);
+  let lastErr=0, integ=0;
+  function frame(t){
+    const s=t/1000;
+    // line wanders like a curvy track
+    const line=7.5+5.6*Math.sin(s*0.9)+1.6*Math.sin(s*2.3+1);
+    const vals=[];
+    for(let i=0;i<16;i++){const d=i-line;vals.push(Math.max(0,Math.min(1,Math.exp(-d*d/2.2)+0.04*Math.sin(s*7+i*1.7))));}
+    const sum=vals.reduce((a,b)=>a+b,0)||1;
+    const pos=vals.reduce((a,v,i)=>a+v*i*1000,0)/sum;
+    const err=pos-7500; integ=Math.max(-2e5,Math.min(2e5,integ+err*0.016));
+    const out=Math.round(0.06*err+0.0004*integ+0.9*(err-lastErr)); lastErr=err;
+    ctx.clearRect(0,0,W,H);
+    const padX=22,padT=22,padB=34, bw=(W-padX*2)/16, gh=H-padT-padB;
+    // grid
+    ctx.strokeStyle='rgba(239,236,228,.07)';ctx.lineWidth=1;
+    for(let g=0;g<=4;g++){const y=padT+gh*g/4;ctx.beginPath();ctx.moveTo(padX,y);ctx.lineTo(W-padX,y);ctx.stroke();}
+    for(let i=0;i<16;i++){
+      const v=vals[i], h=v*gh, x=padX+i*bw+bw*0.18, w=bw*0.64;
+      ctx.fillStyle='rgba(239,236,228,.06)';ctx.fillRect(x,padT,w,gh);
+      ctx.fillStyle=v>0.5?'#C8E63C':'rgba(200,230,60,'+(0.25+v*0.6)+')';
+      ctx.fillRect(x,padT+gh-h,w,h);
+      ctx.fillStyle='#8E8B83';ctx.font='10px Inter,system-ui';ctx.textAlign='center';
+      ctx.fillText(i,x+w/2,H-14);
+    }
+    // centre + position markers
+    const cx=padX+8*bw; ctx.strokeStyle='rgba(239,236,228,.35)';ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(cx,padT-8);ctx.lineTo(cx,padT+gh);ctx.stroke();ctx.setLineDash([]);
+    const px=padX+(pos/1000+0.5)*bw; ctx.fillStyle='#EE6B5E';ctx.beginPath();ctx.moveTo(px,padT-2);ctx.lineTo(px-6,padT-12);ctx.lineTo(px+6,padT-12);ctx.closePath();ctx.fill();
+    rPos.textContent=Math.round(pos); rErr.textContent=(err>0?'+':'')+Math.round(err); rOut.textContent=(out>0?'+':'')+out;
+    if(!reduce) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  // ---- nav highlighting + progress meter ----
+  const links=[...document.querySelectorAll('nav.menu a')];
+  const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
+  const meter=document.getElementById('meter');
+  function onScroll(){
+    const y=scrollY+140; let idx=0;
+    secs.forEach((s,i)=>{if(s&&s.offsetTop<=y)idx=i;});
+    links.forEach((a,i)=>a.classList.toggle('on',i===idx));
+    const max=document.documentElement.scrollHeight-innerHeight;
+    meter.style.width=(max>0?Math.max(6,scrollY/max*100):6)+'%';
+  }
+  addEventListener('scroll',onScroll,{passive:true}); onScroll();
+})();
+</script>
+</body>
+</html>
