@@ -67,9 +67,9 @@ p.body{max-width:66ch;color:#cfcbc1}
 .btn.solid:hover{background:#d8f45a}
 
 /* ---------- hero ---------- */
-.hero{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);gap:48px;align-items:center;padding-top:56px}
+.hero{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);gap:48px;align-items:center;padding-top:8px}
 .hero .ctas{display:flex;gap:12px;flex-wrap:wrap;margin-top:32px}
-.crest{position:relative;justify-self:center;width:min(100%,380px)}
+.crest{position:relative;justify-self:center;width:min(100%,330px)}
 .crest img{width:100%;filter:drop-shadow(0 0 40px rgba(200,230,60,.16))}
 .crest::after{content:"";position:absolute;inset:8% 10% 0;background:radial-gradient(closest-side,rgba(200,230,60,.10),transparent);z-index:-1}
 .steps{display:flex;gap:28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:44px;overflow-x:auto}
@@ -195,6 +195,28 @@ footer img{width:140px}
 footer h2{font-size:clamp(30px,4vw,54px)}
 footer p{color:var(--mute);margin:12px 0 0}
 
+
+/* ---------- pages + tabs ---------- */
+.page{display:none;border-bottom:0;padding:44px 0 64px}
+.page.active{display:block;animation:pagein .35s ease}
+@keyframes pagein{from{opacity:.0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.ptabs{display:flex;gap:28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:30px;overflow-x:auto}
+.ptabs button{flex:none;background:none;border:0;border-top:2px solid transparent;margin-top:-1px;padding:15px 0;color:var(--mute);font:600 11.5px/1 var(--body);letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
+.ptabs button i{font-style:normal;color:var(--lime);margin-right:8px}
+.race .ptabs button i{color:var(--coral)}
+.ptabs button:hover{color:var(--ink)}
+.ptabs button.on{color:var(--ink);border-top-color:var(--lime)}
+.race .ptabs button.on{border-top-color:var(--coral)}
+.tabpanel{display:none}
+.tabpanel.on{display:block}
+.tabpanel>.split{margin-top:28px}
+.tabpanel>.pcb{margin-top:28px}
+.pager{display:flex;justify-content:space-between;gap:12px;margin-top:40px;padding-top:20px;border-top:1px solid var(--line)}
+.pager a{text-decoration:none;color:var(--mute);font:600 11.5px/1.4 var(--body);letter-spacing:.12em;text-transform:uppercase}
+.pager a b{display:block;color:var(--ink);font:800 20px/1.1 var(--display);letter-spacing:0;margin-top:6px}
+.pager a:hover b{color:var(--lime)}
+.pager .next{text-align:right;margin-left:auto}
+@media (prefers-reduced-motion:reduce){.page.active{animation:none}}
 /* ---------- responsive ---------- */
 @media (max-width:1100px){
   .hero{grid-template-columns:1fr}
@@ -266,7 +288,7 @@ footer p{color:var(--mute);margin:12px 0 0}
   <div class="wrap">
 
   <!-- ============ OVERVIEW ============ -->
-  <section id="overview">
+  <section id="overview" class="page">
     <div class="hero">
       <div>
         <p class="kicker">Pathfinders · ECE · <em>VIT Chennai</em></p>
@@ -306,10 +328,11 @@ footer p{color:var(--mute);margin:12px 0 0}
       <div class="stat"><strong>16</strong><span>IR sensors on our custom array, read through one multiplexer</span></div>
       <div class="stat"><strong class="c">3S</strong><span>LiPo race car on an ELRS 2.4 GHz radio link</span></div>
     </div>
+      <nav class="pager" aria-label="Page navigation"><a class="next" href="#films">Next<b>Build films</b></a></nav>
   </section>
 
   <!-- ============ FILMS ============ -->
-  <section id="films">
+  <section id="films" class="page">
     <p class="kicker">Build films</p>
     <h2>From bare board to track.</h2>
     <p class="lede">Both robots, start to finish. Sound on.</p>
@@ -325,10 +348,11 @@ footer p{color:var(--mute);margin:12px 0 0}
         </figure>
       </div>
     </div>
+      <nav class="pager" aria-label="Page navigation"><a href="#overview">Previous<b>Overview</b></a><a class="next" href="#lfr">Next<b>Line follower</b></a></nav>
   </section>
 
   <!-- ============ LFR ============ -->
-  <section id="lfr" class="lfr">
+  <section id="lfr" class="page lfr">
     <div class="proj-head">
       <div>
         <p class="kicker">Project <em>01</em> · Autonomous</p>
@@ -338,6 +362,9 @@ footer p{color:var(--mute);margin:12px 0 0}
       <span class="badge">Built &amp; track-tested</span>
     </div>
 
+
+    <div class="ptabs" role="tablist"><button type="button" role="tab" data-tab="specs" class="on" aria-selected="true"><i>1</i>Specs</button><button type="button" role="tab" data-tab="pcb" aria-selected="false"><i>2</i>PCB</button><button type="button" role="tab" data-tab="firmware" aria-selected="false"><i>3</i>Firmware</button><button type="button" role="tab" data-tab="gallery" aria-selected="false"><i>4</i>Gallery</button></div>
+    <div class="tabpanel on" data-panel="specs">
     <div class="split">
       <table class="spec">
         <caption>Hardware spec</caption>
@@ -399,7 +426,8 @@ footer p{color:var(--mute);margin:12px 0 0}
       </div>
     </div>
 
-
+    </div>
+    <div class="tabpanel" data-panel="pcb">
     <div class="pcb">
       <div class="pcb-head">
         <h3>The boards</h3>
@@ -426,6 +454,8 @@ footer p{color:var(--mute);margin:12px 0 0}
         </div>
       </div>
     </div>
+    </div>
+    <div class="tabpanel" data-panel="firmware">
     <div class="modes" aria-label="Firmware menu modes">
       <div class="mode"><i>Mode</i><b>PID line follow</b><span>Weighted 16-sensor position into a PID steering loop</span></div>
       <div class="mode"><i>Mode</i><b>Maze explore</b><span>Detects junctions and dead ends, picks each turn itself</span></div>
@@ -444,6 +474,8 @@ footer p{color:var(--mute);margin:12px 0 0}
       <div class="note"><h3>Clean power</h3><p>A 2S LiPo feeds the motor driver while a 3.3 V buck feeds the logic, keeping motor noise away from the sensor readings.</p></div>
     </div>
 
+    </div>
+    <div class="tabpanel" data-panel="gallery">
     <div class="gallery">
       <figure class="g-w3 g-h2"><img src="media/lfr-board.jpg" alt="Top view of the Pathfinders board with STM32, OLED, driver and motors"><figcaption>Main board: STM32, TB6612FNG, OLED, N20s</figcaption></figure>
       <figure class="g-w3"><img src="media/lfr-oled.jpg" alt="OLED showing the 16-sensor bar graph"><figcaption>Live 16-bar sensor view on the OLED</figcaption></figure>
@@ -452,10 +484,12 @@ footer p{color:var(--mute);margin:12px 0 0}
       <figure class="g-w2"><img src="media/lfr-motor.jpg" alt="Motor and wheel test"><figcaption>Motor test</figcaption></figure>
       <figure class="g-w2"><img src="media/lfr-dark.jpg" alt="Robot in the dark with its LEDs lit"><figcaption>Lights on</figcaption></figure>
     </div>
+      </div>
+      <nav class="pager" aria-label="Page navigation"><a href="#films">Previous<b>Build films</b></a><a class="next" href="#race">Next<b>Race bot</b></a></nav>
   </section>
 
   <!-- ============ RACE BOT ============ -->
-  <section id="race" class="race">
+  <section id="race" class="page race">
     <div class="proj-head">
       <div>
         <p class="kicker">Project <em style="color:var(--coral)">02</em> · Radio controlled</p>
@@ -465,6 +499,9 @@ footer p{color:var(--mute);margin:12px 0 0}
       <span class="badge">Built &amp; raced</span>
     </div>
 
+
+    <div class="ptabs" role="tablist"><button type="button" role="tab" data-tab="specs" class="on" aria-selected="true"><i>1</i>Specs</button><button type="button" role="tab" data-tab="engineering" aria-selected="false"><i>2</i>Engineering</button><button type="button" role="tab" data-tab="gallery" aria-selected="false"><i>3</i>Gallery</button></div>
+    <div class="tabpanel on" data-panel="specs">
     <div class="split">
       <div class="panel">
         <div class="panel-h"><span>Control signal chain</span><span style="color:var(--coral)">RC</span></div>
@@ -515,6 +552,8 @@ footer p{color:var(--mute);margin:12px 0 0}
       </table>
     </div>
 
+    </div>
+    <div class="tabpanel" data-panel="engineering">
     <div class="notes">
       <div class="note"><h3>Real protocol, not hobby PWM</h3><p>The receiver talks CRSF, the same digital link FPV drones use. Our ESP32 firmware parses the frames, pulls the stick channels and turns them into throttle and steering in real time.</p></div>
       <div class="note"><h3>Bench first, then dirt</h3><p>Every firmware change was proven on the bench with the wheels off the ground, radio in hand, before the car went back out to the field.</p></div>
@@ -522,6 +561,9 @@ footer p{color:var(--mute);margin:12px 0 0}
       <div class="note"><h3>Four-wheel drive</h3><p>A motor at every corner on 1/8-scale wheels gives the grip for loose dirt, grass and ramp climbs, and the torque to turn tight on the circle sections.</p></div>
     </div>
 
+    <p class="quote">Bench test first, dirt second, competition third. Every run taught the next build something.</p>
+    </div>
+    <div class="tabpanel" data-panel="gallery">
     <div class="gallery">
       <figure class="g-w2 g-h2"><img src="media/race-cad.jpg" alt="CAD sketch of the base plate, 185 by 175 millimetres"><figcaption>CAD: 185 × 175 mm base</figcaption></figure>
       <figure class="g-w2 g-h2"><img src="media/race-plate.jpg" alt="Metal base plate with four motor brackets"><figcaption>Plate with motor brackets</figcaption></figure>
@@ -533,11 +575,12 @@ footer p{color:var(--mute);margin:12px 0 0}
       <figure class="g-w3"><img src="media/race-ramp.jpg" alt="Car climbing a ramp at a competition"><figcaption>Competition: ramp section</figcaption></figure>
       <figure class="g-w3"><img src="media/race-circle.jpg" alt="Car on the circle section of a competition track"><figcaption>Competition: precision circles</figcaption></figure>
     </div>
-    <p class="quote">Bench test first, dirt second, competition third. Every run taught the next build something.</p>
+    </div>
+      <nav class="pager" aria-label="Page navigation"><a href="#lfr">Previous<b>Line follower</b></a><a class="next" href="#capabilities">Next<b>Capabilities</b></a></nav>
   </section>
 
   <!-- ============ CAPABILITIES ============ -->
-  <section id="capabilities">
+  <section id="capabilities" class="page">
     <p class="kicker">In-house capabilities</p>
     <h2>We make every layer ourselves.</h2>
     <p class="lede">Nothing waits on a vendor: boards, mechanics, firmware and software all happen on our bench.</p>
@@ -549,10 +592,11 @@ footer p{color:var(--mute);margin:12px 0 0}
       <div class="cap"><h3>Control &amp; radio</h3><p>PID tuning, RC protocols and long-range links.</p><div class="chips"><span>PID</span><span>ELRS / CRSF</span><span>LoRa 433 MHz</span></div></div>
       <div class="cap"><h3>Software, AI &amp; digital</h3><p>Dashboards, AI copilots and hardware description work.</p><div class="chips"><span>TypeScript</span><span>MATLAB</span><span>Verilog</span><span>LTspice</span></div></div>
     </div>
+      <nav class="pager" aria-label="Page navigation"><a href="#race">Previous<b>Race bot</b></a><a class="next" href="#team">Next<b>Team</b></a></nav>
   </section>
 
   <!-- ============ TEAM ============ -->
-  <section id="team">
+  <section id="team" class="page">
     <p class="kicker">The team</p>
     <h2>Four engineers. One pit crew.</h2>
     <p class="lede">ECE students at VIT Chennai. We built both robots together; each of us owns a layer.</p>
@@ -598,6 +642,7 @@ footer p{color:var(--mute);margin:12px 0 0}
         </div>
       </div>
     </footer>
+      <nav class="pager" aria-label="Page navigation"><a href="#capabilities">Previous<b>Capabilities</b></a></nav>
   </section>
   </div>
 </main>
@@ -643,18 +688,29 @@ footer p{color:var(--mute);margin:12px 0 0}
   }
   requestAnimationFrame(frame);
 
-  // ---- nav highlighting + progress meter ----
+  // ---- page router (hash) + tabs ----
   const links=[...document.querySelectorAll('nav.menu a')];
-  const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
+  const pages=[...document.querySelectorAll('section.page')];
+  const ids=pages.map(p=>p.id);
   const meter=document.getElementById('meter');
-  function onScroll(){
-    const y=scrollY+140; let idx=0;
-    secs.forEach((s,i)=>{if(s&&s.offsetTop<=y)idx=i;});
-    links.forEach((a,i)=>a.classList.toggle('on',i===idx));
-    const max=document.documentElement.scrollHeight-innerHeight;
-    meter.style.width=(max>0?Math.max(6,scrollY/max*100):6)+'%';
+  function show(){
+    let id=(location.hash||'#overview').slice(1);
+    if(!ids.includes(id)) id='overview';
+    pages.forEach(p=>p.classList.toggle('active',p.id===id));
+    links.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+id));
+    const i=ids.indexOf(id); meter.style.width=((i+1)/ids.length*100)+'%';
+    document.querySelectorAll('video').forEach(v=>{if(!v.closest('.page.active'))v.pause();});
+    window.scrollTo(0,0);
   }
-  addEventListener('scroll',onScroll,{passive:true}); onScroll();
+  addEventListener('hashchange',()=>{show();size();}); show(); size();
+  document.querySelectorAll('.ptabs').forEach(bar=>{
+    const sec=bar.closest('section');
+    bar.addEventListener('click',e=>{
+      const btn=e.target.closest('button'); if(!btn) return;
+      bar.querySelectorAll('button').forEach(x=>{const on=x===btn;x.classList.toggle('on',on);x.setAttribute('aria-selected',on);});
+      sec.querySelectorAll('.tabpanel').forEach(p=>p.classList.toggle('on',p.dataset.panel===btn.dataset.tab));
+    });
+  });
 })();
 </script>
 </body>
