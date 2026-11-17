@@ -189,6 +189,11 @@ p.body{max-width:66ch;color:#cfcbc1}
 .mate .links a{font:600 11px/1 var(--body);letter-spacing:.1em;text-transform:uppercase;text-decoration:none;border:1px solid var(--line);padding:8px 10px}
 .mate .links a:hover{border-color:var(--ink)}
 
+
+.mate .str{list-style:none;margin:0;padding:0;display:grid;gap:7px}
+.mate .str li{position:relative;padding-left:16px;font-size:13.5px;color:var(--ink)}
+.mate .str li::before{content:"";position:absolute;left:0;top:.55em;width:7px;height:7px;background:var(--lime)}
+.mate .chips span{font-size:11.5px;color:var(--mute)}
 /* ---------- footer ---------- */
 footer{padding:64px 0 80px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:36px;align-items:center}
 footer img{width:140px}
@@ -654,34 +659,62 @@ footer p{color:var(--mute);margin:12px 0 0}
   <section id="team" class="page">
     <p class="kicker">The team</p>
     <h2>Four engineers. One pit crew.</h2>
-    <p class="lede">ECE students at VIT Chennai. We built both robots together; each of us owns a layer.</p>
+    <p class="lede">ECE students at VIT Chennai. Each of us owns a layer of the stack, and together we cover all of it.</p>
     <div class="team">
       <article class="mate">
         <div class="ini">VP</div>
         <h3>V Pranav Kumar</h3>
         <span class="role">Hardware &amp; RF lead</span>
-        <p>Electronics architecture, PCB, power and radio. Also built a LoRa 433 MHz control link on ESP32 and SX1278.</p>
+        <p>Turns a block diagram into a board that works: schematic, layout, power and the radio link.</p>
+        <ul class="str">
+          <li>PCB design, schematic to fabrication</li>
+          <li>Power systems and LiPo handling</li>
+          <li>RF and RC links</li>
+          <li>System integration and bring-up</li>
+        </ul>
+        <div class="chips"><span>KiCad</span><span>Altium</span><span>ELRS / CRSF</span><span>LoRa</span><span>SolidWorks</span><span>Fusion 360</span></div>
         <div class="links"><a href="https://github.com/Killerpk06">GitHub</a><a href="https://www.linkedin.com/in/v-pranav-kumar-6327a6317/">LinkedIn</a></div>
       </article>
       <article class="mate">
         <div class="ini">MK</div>
         <h3>Muthiah Karthik S</h3>
         <span class="role">Firmware &amp; control lead</span>
-        <p>Control loops and sensor drivers. Built a fall-detection device and a USB HID macropad with encoders and a slider.</p>
+        <p>Makes the hardware behave: real-time code, control loops and clean sensor data.</p>
+        <ul class="str">
+          <li>Embedded C / C++ firmware</li>
+          <li>PID tuning and closed-loop control</li>
+          <li>Sensor interfacing and calibration</li>
+          <li>Human interfaces: buttons, encoders, USB HID</li>
+        </ul>
+        <div class="chips"><span>C / C++</span><span>Arduino</span><span>STM32</span><span>ESP32</span><span>PID</span></div>
         <div class="links"><a href="https://github.com/Karthik12357">GitHub</a><a href="https://www.linkedin.com/in/muthiah-karthik-saravanan/">LinkedIn</a></div>
       </article>
       <article class="mate">
         <div class="ini">AA</div>
         <h3>Ashwanth A</h3>
         <span class="role">Software, IoT &amp; AI lead</span>
-        <p>Dashboards and the demo layer. Built an ESP32-S3 smart home assistant, a live serial dashboard and a clinical AI copilot.</p>
+        <p>Connects the device to people: live data, dashboards and an AI layer on top.</p>
+        <ul class="str">
+          <li>IoT devices and connectivity</li>
+          <li>Web apps and live data dashboards</li>
+          <li>AI integration</li>
+          <li>Control-system modelling and simulation</li>
+        </ul>
+        <div class="chips"><span>TypeScript</span><span>ESP32-S3</span><span>MATLAB</span><span>AI / LLMs</span></div>
         <div class="links"><a href="https://github.com/ashfive1">GitHub</a><a href="https://www.linkedin.com/in/ashwanth-a-49a659282/">LinkedIn</a></div>
       </article>
       <article class="mate">
         <div class="ini">BT</div>
         <h3>Balaji T</h3>
         <span class="role">Circuits &amp; verification lead</span>
-        <p>Analog front-ends and logic. Verilog state machines, an LTspice AM transmitter and an optical fibre data link.</p>
+        <p>Proves a circuit before it is built: logic, analog and signal design, simulated first.</p>
+        <ul class="str">
+          <li>Digital logic and state machines</li>
+          <li>Analog and RF circuit simulation</li>
+          <li>Communication systems</li>
+          <li>Design verification</li>
+        </ul>
+        <div class="chips"><span>Verilog</span><span>LTspice</span><span>FSM design</span><span>Comms links</span></div>
         <div class="links"><a href="https://github.com/Balaji3476">GitHub</a><a href="https://www.linkedin.com/in/balaji-t-63b28a320">LinkedIn</a></div>
       </article>
     </div>
