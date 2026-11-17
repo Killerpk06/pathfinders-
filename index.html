@@ -194,6 +194,10 @@ p.body{max-width:66ch;color:#cfcbc1}
 .mate .str li{position:relative;padding-left:16px;font-size:13.5px;color:var(--ink)}
 .mate .str li::before{content:"";position:absolute;left:0;top:.55em;width:7px;height:7px;background:var(--lime)}
 .mate .chips span{font-size:11.5px;color:var(--mute)}
+.skillset{display:grid;gap:8px}
+.sk-h{font:600 10.5px/1 var(--body);letter-spacing:.14em;text-transform:uppercase}
+.hw .sk-h{color:var(--lime)} .sw .sk-h{color:var(--coral)}
+.sw .str li::before{background:var(--coral)}
 /* ---------- footer ---------- */
 footer{padding:64px 0 80px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:36px;align-items:center}
 footer img{width:140px}
@@ -659,62 +663,46 @@ footer p{color:var(--mute);margin:12px 0 0}
   <section id="team" class="page">
     <p class="kicker">The team</p>
     <h2>Four engineers. One pit crew.</h2>
-    <p class="lede">ECE students at VIT Chennai. Each of us owns a layer of the stack, and together we cover all of it.</p>
+    <p class="lede">ECE students at VIT Chennai. Every one of us works across hardware and software, and each of us leads one layer of the stack.</p>
     <div class="team">
       <article class="mate">
         <div class="ini">VP</div>
         <h3>V Pranav Kumar</h3>
         <span class="role">Hardware &amp; RF lead</span>
-        <p>Turns a block diagram into a board that works: schematic, layout, power and the radio link.</p>
-        <ul class="str">
-          <li>PCB design, schematic to fabrication</li>
-          <li>Power systems and LiPo handling</li>
-          <li>RF and RC links</li>
-          <li>System integration and bring-up</li>
-        </ul>
-        <div class="chips"><span>KiCad</span><span>Altium</span><span>ELRS / CRSF</span><span>LoRa</span><span>SolidWorks</span><span>Fusion 360</span></div>
+        <p>Takes a design from schematic to a working machine, then writes the code that drives it.</p>
+        <div class="skillset hw"><span class="sk-h">Hardware</span><ul class="str"><li>PCB design, schematic to fabrication</li><li>Power systems and LiPo handling</li><li>RF and RC radio links</li></ul></div>
+        <div class="skillset sw"><span class="sk-h">Software</span><ul class="str"><li>STM32 and ESP32 firmware</li><li>Radio protocol decoding (CRSF)</li><li>CAD for chassis and mounts</li></ul></div>
+        <div class="chips"><span>KiCad</span><span>Altium</span><span>ELRS / CRSF</span><span>LoRa</span><span>Arduino</span><span>SolidWorks</span><span>Fusion 360</span></div>
         <div class="links"><a href="https://github.com/Killerpk06">GitHub</a><a href="https://www.linkedin.com/in/v-pranav-kumar-6327a6317/">LinkedIn</a></div>
       </article>
       <article class="mate">
         <div class="ini">MK</div>
         <h3>Muthiah Karthik S</h3>
         <span class="role">Firmware &amp; control lead</span>
-        <p>Makes the hardware behave: real-time code, control loops and clean sensor data.</p>
-        <ul class="str">
-          <li>Embedded C / C++ firmware</li>
-          <li>PID tuning and closed-loop control</li>
-          <li>Sensor interfacing and calibration</li>
-          <li>Human interfaces: buttons, encoders, USB HID</li>
-        </ul>
-        <div class="chips"><span>C / C++</span><span>Arduino</span><span>STM32</span><span>ESP32</span><span>PID</span></div>
+        <p>Builds the device and makes it behave: wiring, sensors and the control loop on top.</p>
+        <div class="skillset hw"><span class="sk-h">Hardware</span><ul class="str"><li>Robot and device builds</li><li>Sensor and motor-driver wiring</li><li>PCB design (growing skill)</li></ul></div>
+        <div class="skillset sw"><span class="sk-h">Software</span><ul class="str"><li>Embedded C / C++ firmware</li><li>PID tuning and closed-loop control</li><li>USB HID and input devices</li></ul></div>
+        <div class="chips"><span>C / C++</span><span>Arduino</span><span>STM32</span><span>ESP32</span><span>PID</span><span>Pro Micro</span></div>
         <div class="links"><a href="https://github.com/Karthik12357">GitHub</a><a href="https://www.linkedin.com/in/muthiah-karthik-saravanan/">LinkedIn</a></div>
       </article>
       <article class="mate">
         <div class="ini">AA</div>
         <h3>Ashwanth A</h3>
         <span class="role">Software, IoT &amp; AI lead</span>
-        <p>Connects the device to people: live data, dashboards and an AI layer on top.</p>
-        <ul class="str">
-          <li>IoT devices and connectivity</li>
-          <li>Web apps and live data dashboards</li>
-          <li>AI integration</li>
-          <li>Control-system modelling and simulation</li>
-        </ul>
-        <div class="chips"><span>TypeScript</span><span>ESP32-S3</span><span>MATLAB</span><span>AI / LLMs</span></div>
+        <p>Connects hardware to people: device in hand, data on screen, AI on top.</p>
+        <div class="skillset hw"><span class="sk-h">Hardware</span><ul class="str"><li>ESP32-S3 IoT hardware</li><li>Serial and sensor integration</li><li>Robot builds and testing</li></ul></div>
+        <div class="skillset sw"><span class="sk-h">Software</span><ul class="str"><li>Web apps and live data dashboards</li><li>AI integration</li><li>Control modelling in MATLAB</li></ul></div>
+        <div class="chips"><span>ESP32-S3</span><span>TypeScript</span><span>MATLAB</span><span>AI / LLMs</span><span>Arduino serial</span></div>
         <div class="links"><a href="https://github.com/ashfive1">GitHub</a><a href="https://www.linkedin.com/in/ashwanth-a-49a659282/">LinkedIn</a></div>
       </article>
       <article class="mate">
         <div class="ini">BT</div>
         <h3>Balaji T</h3>
         <span class="role">Circuits &amp; verification lead</span>
-        <p>Proves a circuit before it is built: logic, analog and signal design, simulated first.</p>
-        <ul class="str">
-          <li>Digital logic and state machines</li>
-          <li>Analog and RF circuit simulation</li>
-          <li>Communication systems</li>
-          <li>Design verification</li>
-        </ul>
-        <div class="chips"><span>Verilog</span><span>LTspice</span><span>FSM design</span><span>Comms links</span></div>
+        <p>Designs the circuit, proves it in simulation, then helps put it on a board.</p>
+        <div class="skillset hw"><span class="sk-h">Hardware</span><ul class="str"><li>Analog and RF circuit design</li><li>RF sensor PCB design for fabrication</li><li>Communication link hardware</li></ul></div>
+        <div class="skillset sw"><span class="sk-h">Software</span><ul class="str"><li>Verilog digital design and FSMs</li><li>LTspice circuit simulation</li><li>Design verification</li></ul></div>
+        <div class="chips"><span>Verilog</span><span>LTspice</span><span>FSM design</span><span>RF / antenna</span><span>Optical links</span></div>
         <div class="links"><a href="https://github.com/Balaji3476">GitHub</a><a href="https://www.linkedin.com/in/balaji-t-63b28a320">LinkedIn</a></div>
       </article>
     </div>
